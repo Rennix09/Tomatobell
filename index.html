@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,minimum=1.0,user-scalable=no">
+	<meta name="format-detection" content="telephone=no, email=no">
+	<style type="text/css">
+	body{
+		font-size: 62.5%;
+	}
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	div{
+		box-sizing: border-box;
+		max-width: 100%;
+	}
+	
+		#app{
+			background: #fff;
+			width: 100%;
+			height:100vh;
+		}
+		.remaining{
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			background: #376956;
+		}
+		.remaining .time{
+			height: 300px;
+			width: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+		.remaining .time h2{
+			color:#fff;
+			text-align: center;
+			font-size: 6rem;
+		}
+		.main{
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			height: 100vh;
+		}
+		#app a{
+			display: inline-block;
+			border: 1px solid red;
+			width: 80%;
+			height: 50px;
+			background: #376956;
+			color:#fff;
+			font-size: 2rem;
+			text-decoration: none;
+			border-radius: 1rem;
+		}
+		p{
+			text-align: center;
+		}
+		.work-completed {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			height: 100vh;
+			width:100%;
+		}
+		.work-completed a{
+			width:100%;
+		}
+		.sleep-minutes{
+			height: 20px;
+			font-size: 2rem;
+			width: 30%;
+			border:1px solid blue;
+			padding: 10px;
+			text-align: center;
+		}
+		.main>p{
+			margin: 10px 0;
+		}
+		.main h3{
+			font-size: 1.0rem;
+			padding: 10px 2.6rem;
+		}
+		.main h1{
+			text-align: center;
+		}
+		.work-completed h2{
+			text-align: center;
+			margin: 10px 0;
+		}
+		.remaining h2{
+			color:#fff;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+<div id="app">
+	<div v-if="workCompleted" class="work-completed">
+		<h2>恭喜您完成了一个番茄时段！工作{{workMinutes}}分钟了,休息一会吧</h2>
+		<p><a @pre.click="onStop" href="">好的</a></p>
+	</div>
+	<div v-else>
+		<div v-if="isRunning" class="remaining">
+			<h2>您正在努力工作</h2>
+			<div class="time">
+				<h2>{{remaining.min|paddingzero}}:{{remaining.second|paddingzero}}</h2>
+			</div>
+		</div>
+		<div v-else class="main">
+			<p>
+				<h1>番茄钟</h1>
+				<h3>
+					使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。
+				</h3>
+				<p>请输入您需要专注工作的分钟数</p>
+				<p><input class="sleep-minutes" v-model="workMinutes" type="" name=""></p>
+			</p>
+			<p>
+				<a @click.pre="onStart" href="#">开始努力工作</a>
+			</p>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+<script src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.js"></script>
+<script type="text/javascript">
+	var timer = null;
+	var vm = new Vue({
+		el:'#app',
+		data:{
+			isRunning:false, // 番茄时钟是否正在运行
+			remainingSeconds:0, // 剩余秒
+			workMinutes:25, //番茄工作分钟数
+			// 用于展示的倒计时
+			remaining:{
+				min:0,
+				second:0
+			},
+			workCompleted:false // 是否已经完成番茄时段
+		},
+		methods:{
+			onStart :function(){
+				var that = this;
+				this.workCompleted = false;
+				this.remainingSeconds = this.workMinutes*60;
+				this.isRunning = true;
+				// 剩余工作秒数每隔一秒减1
+				timer = setInterval(function(){
+					that.remainingSeconds = that.remainingSeconds-1;
+				},1000)
+			},
+			onStop:function(){
+				this.isRunning = false;
+				clearInterval(timer);
+			},
+			onworkCompleted:function(){
+				// 展示完成页面
+				this.workCompleted = true;
+
+				// 在这里播放音乐提示用户休息
+			}
+		},
+		watch:{
+			remainingSeconds:function(curr,old){
+				if(curr<=0){
+					this.onworkCompleted();
+				}else{
+					this.remaining.min=Math.floor(curr/60);
+					this.remaining.second=curr%60;
+				}
+			}
+		},
+		filters:{
+			// 格式化时间分钟和秒，自动补0
+			paddingzero:function(val){
+				if(val<10){
+					if(val<=0){
+						return '00';
+					}
+			 		return '0' + val.toString();	
+				}
+				return val;
+			}
+		},
+		mounted:function(){},
+		created:function(){}
+	})
+</script>
